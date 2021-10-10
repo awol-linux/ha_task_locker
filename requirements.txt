@@ -1,0 +1,5 @@
+ipython
+celery[redis]
+celery-redbeat
+redlock
+kazoo
