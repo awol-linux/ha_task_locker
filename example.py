@@ -2,11 +2,14 @@ import logging
 from datetime import timedelta
 
 import redis
+
 from celery import Celery
 from kazoo.client import KazooClient
-# from kazoo.recipe.lock import Lock as KazooLock
-from libs.lockers.redis_locker import RedisLockFactory
-from libs.lockers.zookeeper_locker import KazooLockFactory
+from pymongo import MongoClient
+
+from libs.lockers.redis import RedisLockFactory
+from libs.lockers.zookeeper import KazooLockFactory
+from libs.lockers.mongodb import MongoLockFactory
 from libs.scheduler import scheduled_task,  shared_scheduled_task
 
 LOG = logging.getLogger(__name__)
@@ -42,5 +45,19 @@ def test_zk_scheduled_task():
 def test_zk_shared_task():
     return 1 + 1
 
+mongo_client = MongoClient("mongodb://mongodb")
+table = mongo_client.lock
+
+mo = MongoLockFactory(table)
+
+@scheduled_task(ttl=ttl, capp=app, locker=mo)
+def test_mo_scheduled_task():
+    return 1 + 1
+
+@shared_scheduled_task(ttl=ttl, locker=mo)
+def test_mo_shared_task():
+    return 1 + 1
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+

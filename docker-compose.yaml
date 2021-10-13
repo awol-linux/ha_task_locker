@@ -13,3 +13,6 @@ services:
     image: 'bitnami/zookeeper:latest'
     environment:
       - "ALLOW_ANONYMOUS_LOGIN=yes"
+  mongodb:
+    image : mongo
+    container_name: mongodb
