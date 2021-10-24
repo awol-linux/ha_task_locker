@@ -12,6 +12,14 @@ libs.lockers.mongodb module
    :undoc-members:
    :show-inheritance:
 
+libs.lockers.quorom module
+--------------------------
+
+.. automodule:: libs.lockers.quorom
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 libs.lockers.redis module
 -------------------------
 

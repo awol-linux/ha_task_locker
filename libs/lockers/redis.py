@@ -5,11 +5,6 @@ from redis.lock import Lock as RedisClientLock
 
 from . import CreateLock, Lock, LockResource, FailedToAcquireLock
 
-HOST = os.getenv("REDIS_HOST", "redis")
-PORT = int(os.getenv("REDIS_PORT", 6379))
-DB = int(os.getenv("REDIS_DB", 0))
-
-
 class RedisLock(Lock):
     """
     Redis lease object used to acquire and release locks.
