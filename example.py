@@ -6,7 +6,9 @@ import redis
 from celery import Celery
 from kazoo.client import KazooClient
 from pymongo import MongoClient
-
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from libs.lockers.sqlalchemy import SQLLockFacotory
 from libs.lockers.redis import RedisLockFactory
 from libs.lockers.zookeeper import KazooLockFactory
 from libs.lockers.mongodb import MongoLockFactory
@@ -58,6 +60,19 @@ def test_mo_scheduled_task():
 def test_mo_shared_task():
     return 1 + 1
 
+engine = create_engine("postgresql://postgres:postgres@db/postgres")
+session = Session(engine)
+
+sql = SQLLockFacotory(session)
+
+@scheduled_task(ttl=ttl, capp=app, locker=sql)
+def test_sql_scheduled_task():
+    return 1 + 1
+
+@shared_scheduled_task(ttl=ttl, locker=sql)
+def test_sql_shared_task():
+    return 1 + 1
+    
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 

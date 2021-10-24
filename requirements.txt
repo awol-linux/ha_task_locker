@@ -1,6 +1,7 @@
 ipython
 celery[redis]
-celery-redbeat
 redlock
 kazoo
 pymongo
+sqlalchemy
+psycopg2

@@ -47,5 +47,6 @@ class RedisLockFactory(CreateLock):
         resource: LockResource,
         timeout: datetime.timedelta,
     ) -> RedisClientLock:
-        timeout = timeout.microseconds // 1000 + timeout.seconds * 1000
+        timeout = timeout.microseconds * 1000 + timeout.seconds
+        print(timeout)
         return self.r.lock(resource.string, timeout, blocking_timeout=0)
