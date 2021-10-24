@@ -11,7 +11,27 @@ DB = int(os.getenv("REDIS_DB", 0))
 
 
 class RedisLock(Lock):
-    """Redis locker class"""
+    """ 
+    Redis lease object used to acquire and release locks. 
+    This lock should be generating using a RedisLockFactory factory. 
+
+    Example:
+        
+        Create lock resource and TTL and lock::
+
+            In [8]: ttl = datetime.timedelta(seconds=30)
+
+            In [9]: resource = LockResource('test')
+
+            In [10]: lock = rLocker(resource, ttl)
+            
+        Using as a context manager::
+
+            In [17]: with lock as lock:
+                ...:     print(lock)
+                ...: 
+            True
+    """
 
     def __init__(
         self,
@@ -33,7 +53,9 @@ class RedisLock(Lock):
 
 
 class RedisLockFactory(CreateLock):
-    """Class to create redis locks"""
+    """
+    Class to create redis locks
+    """
 
     def __init__(
         self,
