@@ -1,4 +1,5 @@
-# highly available application ratelimiter
+[![Documentation Status](https://readthedocs.org/projects/ha-task-locker/badge/?version=latest)](https://ha-task-locker.readthedocs.io/en/latest/?badge=latest)
+# Aighly Available Application Ratelimiter
 
 ## Creation
 ___
