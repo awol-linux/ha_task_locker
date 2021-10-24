@@ -3,3 +3,5 @@ env/*
 .vscode
 *pyc
 *pycache*
+
+docs/_build/

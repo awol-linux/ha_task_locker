@@ -1,9 +1,7 @@
-test_ha
-=======
+libs
+====
 
 .. toctree::
    :maxdepth: 4
 
-   celeryconfig
-   example
    libs
