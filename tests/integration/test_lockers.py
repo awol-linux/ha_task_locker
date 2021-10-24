@@ -37,6 +37,7 @@ def test_redis_scheduled_task_locker(app, redislocker):
         test_redis_scheduled_task()
     sleep(1)
     test_redis_scheduled_task()
+    assert False
 
 
 
