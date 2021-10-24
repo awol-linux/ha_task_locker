@@ -5,3 +5,5 @@ kazoo
 pymongo
 sqlalchemy
 psycopg2
+pytest
+pytest-cov 
