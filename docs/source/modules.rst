@@ -1,8 +1,9 @@
-libs
-====
+test_ha
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   lockers
-   scheduler
+   celeryconfig
+   example
+   libs
