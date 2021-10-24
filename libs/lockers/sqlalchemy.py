@@ -36,7 +36,7 @@ class SQLLock(Lock):
     def acquire(self) -> bool:
         self._clear_expired()
         ttl = datetime.now() + self.timeout
-        data = LockTable(resource_name=self.resource.string, expire_at=ttl)
+        data = LockTable(resource_name=self.resource.name, expire_at=ttl)
         try:
             self.session.add(data)
             self.session.commit()
@@ -46,10 +46,10 @@ class SQLLock(Lock):
         return True
 
     def release(self) -> bool:
-        data = LockTable(resource_name=self.resource.string)
+        data = LockTable(resource_name=self.resource.name)
         items = (
             self.session.query(LockTable)
-            .filter(LockTable.resource_name == self.resource.string)
+            .filter(LockTable.resource_name == self.resource.name)
             .all()
         )
         for item in items:

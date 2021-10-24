@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  redis:
+    image: "redis:alpine"
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    environment:
+      - "ALLOW_ANONYMOUS_LOGIN=yes"
+  mongodb:
+    image : mongo
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  app:
+    build: ../
+    volumes:
+      - ./:/workdir
+    working_dir: "/workdir"
+    depends_on: 
+      - redis 
+      - db
+      - mongodb
+      - zookeeper
+    command: python3.10 -m pytest --cov

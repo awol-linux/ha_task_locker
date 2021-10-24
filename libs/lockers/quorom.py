@@ -5,7 +5,7 @@ import os
 import logging
 from redis.lock import Lock as RedisClientLock
 
-from . import CreateLock, Lock, LockResource, FailedToAcquireLock
+from . import CreateLock, FailedToReleaseLock, Lock, LockResource, FailedToAcquireLock, UnknownLockStatus
 
 LOG = logging.getLogger(__name__)
 
@@ -53,6 +53,13 @@ class QuoromLock(Lock):
         
         Returns:
             bool
+        
+        Examples:
+
+            Acquire the lock::
+
+                In [50]: lock.acquire()
+                Out[50]: True
         """
         lock_status: Counter = Counter()
         for lock in self.locks:
@@ -61,14 +68,52 @@ class QuoromLock(Lock):
             except FailedToAcquireLock as e:
                 lock_status.update([False])
                 LOG.error(
-                    f"Failed to lock {self.resource.string} with {lock.__class__.__name__}"
+                    f"Failed to lock {self.resource.name} with {lock}: {e}"
                 )
             if not lock_status[True] > lock_status[False]:
                 raise FailedToAcquireLock
         return True
 
     def release(self) -> bool:
-        return self.lock.release()
+        """
+        Releaes the lock
+        It will try to release a lock on each of the locks it has.
+        If it fails to get majoraty of the locks then it will try to reacquire all the locks and try again raise a :class:`libs.lockers.FailedToAcquireLock`
+        
+        Raises:
+            libs.lockers.FailedToAcquireLock
+        
+        Returns:
+            bool
+        
+        Examples:
+
+            Acquire the lock::
+
+                In [50]: lock.acquire()
+                Out[50]: True
+        """
+        def retry_release():
+            lock_status: Counter = Counter()
+            for lock in self.locks:
+                print(lock)
+                try:
+                    lock_status.update([lock.release()])
+                except FailedToReleaseLock as e:
+                    lock_status.update([False])
+                    LOG.error(f"Failed to Unlock {self.resource.name} with {lock}: {e}") 
+            print(lock_status)
+            if not lock_status[True] > lock_status[False]:
+                try:
+                    self.acquire()
+                except FailedToAcquireLock:
+                    raise UnknownLockStatus
+        try: 
+            return retry_release()
+        except UnknownLockStatus:
+            return retry_release()
+
+
 
 
 class QuoromLockFactory(CreateLock):
@@ -119,3 +164,17 @@ class QuoromLockFactory(CreateLock):
         """
 
         return QuoromLock([lock(resource, timeout) for lock in self.lockers], resource, timeout)
+
+"""
+from libs.lockers import LockResource
+from libs.lockers.quorom import QuoromLockFactory
+from datetime import timedelta
+from example import zkLocker, redisLocker
+from example import zkLocker, redisLocker
+
+ttl, resource = timedelta(seconds=30), LockResource('test')
+lockers = [zkLocker, redisLocker]
+
+qlocker = QuoromLockFactory(lockers)
+lock = qlocker(resource, ttl)
+"""

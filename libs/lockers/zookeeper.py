@@ -1,8 +1,9 @@
 import datetime
 import logging
 
+from kazoo.exceptions import NoNodeError
 from kazoo.client import KazooClient
-from . import CreateLock, FailedToAcquireLock, Lock, LockResource
+from . import CreateLock, FailedToAcquireLock, Lock, LockResource, FailedToReleaseLock
 
 LOG = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class KazooLease(Lock):
         self.resource = resource
         self.timeout = timeout
         self.timefmt = "%Y-%m-%dT%H:%M:%S"
-        self.path = f"/tasks/{self.resource.string}"
+        self.path = f"/tasks/{self.resource.name}"
 
     def acquire(self) -> bool :
         """
@@ -105,7 +106,12 @@ class KazooLease(Lock):
 
                 In [14]: lock.release()
         """
-        self.kz.delete(path=self.path)
+        try:
+            self.kz.delete(path=self.path)
+            return True
+        except NoNodeError:
+            raise FailedToReleaseLock
+
 
 class KazooLockFactory(CreateLock):
     """

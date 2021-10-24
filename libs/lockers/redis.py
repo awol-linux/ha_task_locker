@@ -1,9 +1,11 @@
 import datetime
-import redis
 import os
-from redis.lock import Lock as RedisClientLock
 
-from . import CreateLock, Lock, LockResource, FailedToAcquireLock
+import redis
+
+from . import (CreateLock, FailedToAcquireLock, FailedToReleaseLock, Lock,
+               LockResource)
+
 
 class RedisLock(Lock):
     """
@@ -40,8 +42,9 @@ class RedisLock(Lock):
         timeout: datetime.timedelta,
         lock: Lock | None = None,
     ) -> None:
+        self.resource = resource
         timeout = timeout.microseconds * 1000 + timeout.seconds
-        self.lock = lock or r.lock(resource.string, timeout, blocking_timeout=0)
+        self.lock = lock or r.lock(resource.name, timeout, blocking_timeout=0)
         super().__init__()
 
     def acquire(self) -> bool:
@@ -50,7 +53,11 @@ class RedisLock(Lock):
         return True
 
     def release(self) -> bool:
-        return self.lock.release()
+        try:
+            self.lock.release()
+            return True
+        except redis.exceptions.LockError:
+            raise FailedToReleaseLock
 
 
 class RedisLockFactory(CreateLock):
@@ -90,7 +97,7 @@ class RedisLockFactory(CreateLock):
         self,
         resource: LockResource,
         timeout: datetime.timedelta,
-    ) -> RedisClientLock:
+    ) -> RedisLock:
         return RedisLock(
             self.r, resource, timeout
         )

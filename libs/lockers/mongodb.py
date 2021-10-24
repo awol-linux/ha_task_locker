@@ -19,12 +19,12 @@ class MongoLock(Lock):
         super().__init__()
 
     def acquire(self) -> bool:
-        if not self.resource.string in self.coll.list_collection_names():
-            self.coll.create_collection(self.resource.string)
-        collection = self.coll[self.resource.string]
+        if not self.resource.name in self.coll.list_collection_names():
+            self.coll.create_collection(self.resource.name)
+        collection = self.coll[self.resource.name]
         try:
             collection.insert_one(
-                {"_id": self.resource.string, "date": datetime.datetime.utcnow()}
+                {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
             )
             collection.drop_indexes()
             collection.create_index("date", expireAfterSeconds=self.timeout.seconds)
@@ -34,8 +34,8 @@ class MongoLock(Lock):
 
     def release(self) -> bool:
         return bool(
-            self.coll[self.resource.string].find_one_and_delete(
-                {"_id": self.resource.string}
+            self.coll[self.resource.name].find_one_and_delete(
+                {"_id": self.resource.name}
             )
         )
 
