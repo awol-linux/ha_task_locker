@@ -1,4 +1,6 @@
 version: 2
+
+
 build:
-  toolsbvnvb:
+  tools:
      python: "3.10"
