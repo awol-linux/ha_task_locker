@@ -41,7 +41,7 @@ class MongoLock(Lock):
 
 
 class MongoLockFactory(CreateLock):
-    """Class to create redis locks"""
+    """Class to create MongoDB locks"""
 
     def __init__(
         self,
