@@ -10,6 +10,8 @@ Welcome to ha_task_locker's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   modules
+
 
 
 Indices and tables
