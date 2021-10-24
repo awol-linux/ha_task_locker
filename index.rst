@@ -10,11 +10,6 @@ Welcome to ha_task_locker's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   libs/scheduler
-   libs/lockers/zookeeper
-   libs/lockers/sqlalchemy
-   libs/lockers/redis
-
 
 Indices and tables
 ==================
