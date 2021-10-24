@@ -7,9 +7,11 @@ pipeline {
                 echo 'Building..'
             }
         }
-        stage('Test') {
+                
+        stage("Build and start test image") {
             steps {
-                echo 'Testing..'
+                sh "docker-composer build"
+                sh "docker-compose up -d"
             }
         }
         stage('Deploy') {
@@ -17,5 +19,18 @@ pipeline {
                 echo 'Deploying....'
             }
         }
+    }
+    post {
+      always {
+          sh "docker-compose down || true"
+      }
+
+      success {
+          bitbucketStatusNotify buildState: "SUCCESSFUL"
+      }
+
+      failure {
+          bitbucketStatusNotify buildState: "FAILED"
+      }
     }
 }
