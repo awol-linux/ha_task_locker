@@ -13,13 +13,16 @@ meta = MetaData()
 
 
 class LockTable(Base):
+    """
+    :meta private:
+    """
     __tablename__ = "resources"
     ID = Column(Integer, primary_key=True, autoincrement=True)
     resource_name = Column(String, unique=True)
     expire_at = Column(DateTime)
 
 
-def create_all(engine):
+def _create_all(engine):
     return meta.create_all(engine)
 
 

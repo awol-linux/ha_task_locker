@@ -12,7 +12,15 @@ class KazooLease(Lock):
     This lock should be generating using a KazooLockFactory factory. 
 
     Example:
+        
+        Create lock resource and TTL and lock::
 
+            In [8]: ttl = datetime.timedelta(seconds=30)
+
+            In [9]: resource = LockResource('test')
+
+            In [10]: lock = zkLocker(resource, ttl)
+            
         Using as a context manager::
 
             In [17]: with lock as lock:
@@ -124,14 +132,6 @@ class KazooLockFactory(CreateLock):
             In [6]: zk.start()
 
             In [7]: zkLocker = KazooLockFactory(zk)
-
-        Create lock resource and TTL and lock::
-
-            In [8]: ttl = datetime.timedelta(seconds=30)
-
-            In [9]: resource = LockResource('test')
-
-            In [10]: lock = zkLocker(resource, ttl)
         """
 
     def __init__(

@@ -21,6 +21,7 @@ class Lock(ABC):
                 raise TaskIsLocked(
                     ttl, f"failed to acquire lock"
                 )
+                
         A lock can also be used as a context manager::
             
             with lock() as lock:
