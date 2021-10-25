@@ -7,9 +7,10 @@ pipeline {
                 echo 'Building..'
             }
         }
-        stage('Test') {
+                
+        stage("Build and start test image") {
             steps {
-                echo 'Testing..'
+                sh "docker-compose up -d --build"
             }
         }
         stage('Deploy') {
@@ -17,5 +18,10 @@ pipeline {
                 echo 'Deploying....'
             }
         }
+    }
+    post {
+      always {
+          sh "docker-compose down || true"
+      }
     }
 }

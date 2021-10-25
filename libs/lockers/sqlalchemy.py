@@ -3,19 +3,18 @@ from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, MetaData, String, Table
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session, session
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.sqltypes import DateTime
 
 from . import CreateLock, FailedToAcquireLock, Lock, LockResource
 
 Base = declarative_base()
-meta = MetaData()
-
 
 class LockTable(Base):
     """
     :meta private:
     """
+    
     __tablename__ = "resources"
     ID = Column(Integer, primary_key=True, autoincrement=True)
     resource_name = Column(String, unique=True)
@@ -23,8 +22,10 @@ class LockTable(Base):
 
 
 def _create_all(engine):
-    return meta.create_all(engine)
+    return Base.metadata.create_all(engine)
 
+def _drop_all(engine):
+    return Base.metadata.create_all(engine)
 
 class SQLLock(Lock):
     def __init__(self, session, resource, timeout) -> None:

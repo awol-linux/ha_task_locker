@@ -22,6 +22,7 @@ jobs:
       - name: Build the stack
         run: docker-compose up -d
       - name: Test
+        if: always()
         run: docker exec ha_task_locker_app_1 python3.10 -m pytest
       - name: unbuild the stack
         run: docker-compose down
