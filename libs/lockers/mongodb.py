@@ -26,9 +26,19 @@ class MongoLock(Lock):
             collection.insert_one(
                 {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
             )
-            collection.drop_indexes()
-            collection.create_index("date", expireAfterSeconds=self.timeout.seconds)
         except DuplicateKeyError as e:
+            item = collection.find_one({"_id": self.resource.name})
+            if (item["date"] + self.timeout) < datetime.datetime.utcnow():
+                collection.find_one_and_delete(
+                    {"_id": self.resource.name}
+                )
+                try:
+                    collection.insert_one(
+                        {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
+                    )
+                    return True
+                except DuplicateKeyError as e:
+                    raise FailedToAcquireLock
             raise FailedToAcquireLock
         return True
 

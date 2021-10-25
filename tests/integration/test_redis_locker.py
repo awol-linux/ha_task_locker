@@ -20,9 +20,11 @@ def app():
 def redislocker():
     # Create a redis lock factory for task
     r = redis.from_url("redis://redis:6379/1")
+    r.flushall()
     redisLocker = RedisLockFactory(r)
 
-    return redisLocker
+    yield redisLocker
+    r.close()
 
 def test_redis_scheduled_task_locker(app, redislocker):
     # Create a redis lock factory for task
