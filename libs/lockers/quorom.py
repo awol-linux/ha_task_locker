@@ -70,8 +70,13 @@ class QuoromLock(Lock):
                 LOG.error(
                     f"Failed to lock {self.resource.name} with {lock}: {e}"
                 )
-            if not lock_status[True] > lock_status[False]:
-                raise FailedToAcquireLock
+        if not lock_status[True] > lock_status[False]:
+            for lock in self.locks:
+                try:
+                    lock.acquire()
+                except FailedToAcquireLock:
+                    pass
+            raise FailedToAcquireLock
         return True
 
     def release(self) -> bool:

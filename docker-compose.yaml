@@ -15,7 +15,6 @@ services:
       - "ALLOW_ANONYMOUS_LOGIN=yes"
   mongodb:
     image : mongo
-    container_name: mongodb
   db:
     image: postgres
     environment:
