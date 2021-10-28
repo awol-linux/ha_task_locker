@@ -1,5 +1,5 @@
 """
-Module to task locks Locks 
+Module to task locks Locks
 """
 import logging
 from datetime import timedelta
@@ -10,6 +10,7 @@ from celery import Celery, shared_task
 from .lockers import CreateLock, LockResource
 
 LOG = logging.getLogger(__name__)
+
 
 def scheduled_task(ttl: timedelta, capp: Celery, locker: CreateLock, **lock_kwargs):
     """
@@ -25,11 +26,7 @@ def scheduled_task(ttl: timedelta, capp: Celery, locker: CreateLock, **lock_kwar
         LOG.info(
             f"Attempting to run {func.__name__} with locker {locker.__class__.__name__}"
         )
-        lock = locker(
-            LockResource(func.__name__),
-            ttl,
-            **lock_kwargs,
-        )
+        lock = locker(LockResource(func.__name__), ttl, **lock_kwargs)
 
         def run_task_if_lock(*args, **kwargs):
             lock.acquire()
@@ -54,11 +51,7 @@ def shared_scheduled_task(ttl: Union[timedelta], locker: CreateLock, **lock_kwar
     """
 
     def get_task_lock(func):
-        lock = locker(
-            LockResource(func.__name__),
-            ttl,
-            **lock_kwargs,
-        )
+        lock = locker(LockResource(func.__name__), ttl, **lock_kwargs)
 
         def run_task_if_lock(*args, **kwargs):
             lock.acquire()

@@ -29,9 +29,7 @@ class MongoLock(Lock):
         except DuplicateKeyError as e:
             item = collection.find_one({"_id": self.resource.name})
             if (item["date"] + self.timeout) < datetime.datetime.utcnow():
-                collection.find_one_and_delete(
-                    {"_id": self.resource.name}
-                )
+                collection.find_one_and_delete({"_id": self.resource.name})
                 collection.insert_one(
                     {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
                 )
@@ -45,7 +43,7 @@ class MongoLock(Lock):
                 {"_id": self.resource.name}
             )
         )
-    
+
     @property
     def status(self) -> bool:
         collection = self.coll[self.resource.name]
@@ -54,21 +52,16 @@ class MongoLock(Lock):
             if not (item["date"] + self.timeout) < datetime.datetime.utcnow():
                 return True
         return False
- 
+
 
 class MongoLockFactory(CreateLock):
     """Class to create MongoDB locks"""
 
-    def __init__(
-        self,
-        client: Collection,
-    ) -> None:
+    def __init__(self, client: Collection) -> None:
         self.coll = client
         super().__init__()
 
     def __call__(
-        self,
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, resource: LockResource, timeout: datetime.timedelta
     ) -> MongoLock:
         return MongoLock(self.coll, resource, timeout)

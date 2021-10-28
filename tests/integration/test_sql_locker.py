@@ -25,7 +25,7 @@ def sqllock():
     # Create a zookeeper lock factory for task
     engine = create_engine("postgresql://postgres:postgres@db/postgres")
     session = Session(engine)
-    _create_all(engine) 
+    _create_all(engine)
     sql = SQLLockFacotory(session)
     yield sql
     _drop_all(engine)
@@ -61,13 +61,11 @@ def test_zk_schared_task_locker(sqllock):
     sleep(1)
     test_zk_shared_task()
 
+
 def test_lock_status(app, sqllock: SQLLockFacotory):
     # Create a zk lock factory for task
     ttl = timedelta(seconds=1)
-    lock: Lock = sqllock(
-        resource=LockResource('test'),
-        timeout=ttl
-    )
+    lock: Lock = sqllock(resource=LockResource("test"), timeout=ttl)
     lock.acquire()
     assert lock.status
     lock.release()
