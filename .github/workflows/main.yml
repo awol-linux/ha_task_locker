@@ -28,6 +28,7 @@ jobs:
           python3.10 -m pytest --cov-report xml;\
           curl -Os https://uploader.codecov.io/latest/linux/codecov;\
           chmod +x ./codecov;\
+          ls -la;\
           ./codecov -f ./coverage.xml"
       - name: unbuild the stack
         run: docker-compose down
