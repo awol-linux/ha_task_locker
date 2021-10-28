@@ -57,17 +57,15 @@ def test_mongodb_schared_task_locker(app, mongodb):
     sleep(1)
     test_mongodb_shared_task()
 
+
 def test_lock_status(mongodb: MongoLockFactory):
     # Create a zk lock factory for task
     ttl = timedelta(seconds=1)
-    lock: Lock = mongodb(
-        resource=LockResource('test'),
-        timeout=ttl
-    )
+    lock: Lock = mongodb(resource=LockResource("test"), timeout=ttl)
     lock.acquire()
     assert lock.status
     lock.release()
     assert not lock.status
     lock.acquire()
     sleep(1)
-    assert not lock.status 
+    assert not lock.status
