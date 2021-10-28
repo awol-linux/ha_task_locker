@@ -7,13 +7,14 @@ from . import CreateLock, FailedToAcquireLock, Lock, LockResource, FailedToRelea
 
 LOG = logging.getLogger(__name__)
 
+
 class KazooLease(Lock):
-    """ 
-    Kazoo lease object used to acquire and release locks. 
-    This lock should be generating using a KazooLockFactory factory. 
+    """
+    Kazoo lease object used to acquire and release locks.
+    This lock should be generating using a KazooLockFactory factory.
 
     Example:
-        
+
         Create lock resource and TTL and lock::
 
             In [8]: ttl = datetime.timedelta(seconds=30)
@@ -21,16 +22,17 @@ class KazooLease(Lock):
             In [9]: resource = LockResource('test')
 
             In [10]: lock = zkLocker(resource, ttl)
-            
+
         Using as a context manager::
 
             In [17]: with lock as lock:
                 ...:     print(lock)
-                ...: 
+                ...:
             True
 
-    
+
     """
+
     def __init__(
         self, kz: KazooClient, resource: LockResource, timeout: datetime.timedelta
     ) -> None:
@@ -40,25 +42,25 @@ class KazooLease(Lock):
         self.timefmt = "%Y-%m-%dT%H:%M:%S"
         self.path = f"/tasks/{self.resource.name}"
 
-    def acquire(self) -> bool :
+    def acquire(self) -> bool:
         """
         Method to acqure lock
 
 
         Raises:
             FailedToAcquireLock: Failed to acquire Lock resource
-        
+
         Returns:
             True when the lock was acquired
-        
+
 
         Examples:
 
             Acquire the lock ::
-        
+
                 In [11]: lock.acquire()
                 Out[11]: True
-        
+
             If the lock exists it will raise a FailedToAcquireLock::
 
                 In [12]: lock.acquire()
@@ -77,7 +79,7 @@ class KazooLease(Lock):
                  FailedToAcquireLock:
 
         """
-        
+
         now = datetime.datetime.now()
         self.kz.ensure_path(self.path)
         LOG.debug(f"ensuring path {self.path}")
@@ -112,16 +114,28 @@ class KazooLease(Lock):
         except NoNodeError:
             raise FailedToReleaseLock
 
+    @property
+    def status(self) -> bool:
+        """Get lock status returned as bool"""
+        self.kz.ensure_path(self.path)
+        current_lock, _ = self.kz.get(path=self.path)
+        now = datetime.datetime.now()
+        if current_lock == b"":
+            return False
+        return (
+            datetime.datetime.strptime(current_lock.decode("utf-8"), self.timefmt) > now
+        )
+
 
 class KazooLockFactory(CreateLock):
     """
     Class to create Kazoo locks
-    
+
     Instances of this class are callable and will return a lock
 
     Example:
 
-        Import all necessary imports:: 
+        Import all necessary imports::
 
             In [1]: from libs.lockers.zookeeper import KazooLockFactory
 
@@ -138,19 +152,14 @@ class KazooLockFactory(CreateLock):
             In [6]: zk.start()
 
             In [7]: zkLocker = KazooLockFactory(zk)
-        """
+    """
 
-    def __init__(
-        self,
-        client: KazooClient,
-    ) -> None:
+    def __init__(self, client: KazooClient) -> None:
         self.kz = client
         super().__init__()
 
     def __call__(
-        self,
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, resource: LockResource, timeout: datetime.timedelta
     ) -> KazooLease:
         self.kz.ensure_path("/tasks")
         return KazooLease(self.kz, resource, timeout)

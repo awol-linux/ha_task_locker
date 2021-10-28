@@ -10,11 +10,12 @@ from . import CreateLock, FailedToAcquireLock, Lock, LockResource
 
 Base = declarative_base()
 
+
 class LockTable(Base):
     """
     :meta private:
     """
-    
+
     __tablename__ = "resources"
     ID = Column(Integer, primary_key=True, autoincrement=True)
     resource_name = Column(String, unique=True)
@@ -24,8 +25,10 @@ class LockTable(Base):
 def _create_all(engine):
     return Base.metadata.create_all(engine)
 
+
 def _drop_all(engine):
     return Base.metadata.create_all(engine)
+
 
 class SQLLock(Lock):
     def __init__(self, session, resource, timeout) -> None:
@@ -68,18 +71,21 @@ class SQLLock(Lock):
             self.session.delete(item)
         self.session.commit()
 
+    @property
+    def status(self) -> bool:
+        self._clear_expired()
+        items = (
+            self.session.query(LockTable)
+            .filter(LockTable.resource_name == self.resource.name)
+            .all()
+        )
+        return bool(items)
+
 
 class SQLLockFacotory(CreateLock):
-    def __init__(
-        self,
-        client: Session,
-    ) -> None:
+    def __init__(self, client: Session) -> None:
         self.table = client
         super().__init__()
 
-    def __call__(
-        self,
-        resource: LockResource,
-        timeout: timedelta,
-    ) -> SQLLock:
+    def __call__(self, resource: LockResource, timeout: timedelta) -> SQLLock:
         return SQLLock(self.table, resource, timeout)

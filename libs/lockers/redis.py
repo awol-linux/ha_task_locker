@@ -3,8 +3,7 @@ import os
 
 import redis
 
-from . import (CreateLock, FailedToAcquireLock, FailedToReleaseLock, Lock,
-               LockResource)
+from . import CreateLock, FailedToAcquireLock, FailedToReleaseLock, Lock, LockResource
 
 
 class RedisLock(Lock):
@@ -59,6 +58,10 @@ class RedisLock(Lock):
         except redis.exceptions.LockError:
             raise FailedToReleaseLock
 
+    @property
+    def status(self) -> bool:
+        return self.lock.locked()
+
 
 class RedisLockFactory(CreateLock):
     """
@@ -68,10 +71,10 @@ class RedisLockFactory(CreateLock):
         r: Redis connection to use for locks
         resource: resource to lock
         timeout: length of lock
-    
+
     Examples:
 
-        Import all necessary imports:: 
+        Import all necessary imports::
 
              In [1]: from datetime import timedelta
 
@@ -85,19 +88,13 @@ class RedisLockFactory(CreateLock):
                ...: ttl = timedelta(seconds=30)
                ...: redisLocker = RedisLockFactory(r)
     """
-    def __init__(
-        self,
-        r: redis.Redis,
-    ) -> None:
+
+    def __init__(self, r: redis.Redis) -> None:
 
         self.r = r
         super().__init__()
 
     def __call__(
-        self,
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, resource: LockResource, timeout: datetime.timedelta
     ) -> RedisLock:
-        return RedisLock(
-            self.r, resource, timeout
-        )
+        return RedisLock(self.r, resource, timeout)

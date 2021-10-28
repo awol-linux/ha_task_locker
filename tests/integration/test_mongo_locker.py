@@ -1,12 +1,11 @@
 from datetime import timedelta
-from kazoo.client import KazooClient
 from pymongo.mongo_client import MongoClient
 import pytest
 
 from celery import Celery
 from libs.lockers.mongodb import MongoLockFactory
 from libs.scheduler import scheduled_task, shared_scheduled_task
-from libs.lockers import FailedToAcquireLock, FailedToReleaseLock
+from libs.lockers import FailedToAcquireLock, FailedToReleaseLock, Lock, LockResource
 from time import sleep
 
 
@@ -29,31 +28,44 @@ def mongodb():
     mongo_client.close()
 
 
-def test_zk_scheduled_task_locker(app, mongodb):
-    # Create a zk lock factory for task
+def test_mongodb_scheduled_task_locker(app, mongodb):
+    # Create a mongodb lock factory for task
     ttl = timedelta(seconds=1)
 
     @scheduled_task(ttl=ttl, capp=app, locker=mongodb)
-    def test_zk_scheduled_task():
+    def test_mongodb_scheduled_task():
         return 1 + 1
 
-    test_zk_scheduled_task()
+    test_mongodb_scheduled_task()
     with pytest.raises(FailedToAcquireLock):
-        test_zk_scheduled_task()
+        test_mongodb_scheduled_task()
     sleep(1)
-    test_zk_scheduled_task()
+    test_mongodb_scheduled_task()
 
 
-def test_zk_schared_task_locker(app, mongodb):
-    # Create a zk lock factory for task
+def test_mongodb_schared_task_locker(app, mongodb):
+    # Create a mongodb lock factory for task
     ttl = timedelta(seconds=1)
 
     @shared_scheduled_task(ttl=ttl, locker=mongodb)
-    def test_zk_shared_task():
+    def test_mongodb_shared_task():
         return 1 + 1
 
-    test_zk_shared_task()
+    test_mongodb_shared_task()
     with pytest.raises(FailedToAcquireLock):
-        test_zk_shared_task()
+        test_mongodb_shared_task()
     sleep(1)
-    test_zk_shared_task()
+    test_mongodb_shared_task()
+
+
+def test_lock_status(mongodb: MongoLockFactory):
+    # Create a zk lock factory for task
+    ttl = timedelta(seconds=1)
+    lock: Lock = mongodb(resource=LockResource("test"), timeout=ttl)
+    lock.acquire()
+    assert lock.status
+    lock.release()
+    assert not lock.status
+    lock.acquire()
+    sleep(1)
+    assert not lock.status

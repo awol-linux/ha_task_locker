@@ -51,6 +51,11 @@ class Lock(ABC):
     def release(ABC) -> bool:
         """Method to release the lock"""
 
+    @property
+    @abstractmethod
+    def status(ABC) -> bool:
+        """Method to get the lock status"""
+
     def __enter__(self):
         return self.acquire()
 
@@ -73,11 +78,7 @@ class CreateLock(ABC):
     """
 
     @abstractmethod
-    def __call__(
-        self,
-        resource: LockResource,
-        timeout: timedelta,
-    ) -> Lock:
+    def __call__(self, resource: LockResource, timeout: timedelta) -> Lock:
         """
         Abstract factory used to create the lock
 
@@ -90,15 +91,3 @@ class CreateLock(ABC):
 
         :meta public:
         """
-
-
-@contextmanager
-def lock_context_manager(lock: Lock):
-    """
-    This is no longer needed since the locks work as context managers either way
-    """
-    try:
-        if lock.acquire():
-            yield lock
-    finally:
-        lock.release()
