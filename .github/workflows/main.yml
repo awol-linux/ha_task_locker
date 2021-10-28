@@ -24,5 +24,7 @@ jobs:
       - name: Test
         if: always()
         run: docker exec ha_task_locker_app_1 python3.10 -m pytest
+      - name: Codecov
+        uses: codecov/codecov-action@v2.1.0
       - name: unbuild the stack
         run: docker-compose down
