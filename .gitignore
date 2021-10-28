@@ -5,3 +5,5 @@ env/*
 *pycache*
 
 docs/_build/
+coverage.xml
+codecov

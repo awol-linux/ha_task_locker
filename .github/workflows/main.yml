@@ -23,10 +23,11 @@ jobs:
         run: docker-compose up -d
       - name: Test
         if: always()
-        run: docker exec ha_task_locker_app_1 python3.10 -m pytest --cov-report xml
-      - name: Codecov
-        uses: codecov/codecov-action@v2.1.0
-        with:
-            token: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          docker exec ha_task_locker_app_1 bash -c "\
+          python3.10 -m pytest --cov-report xml;\
+          curl -Os https://uploader.codecov.io/latest/linux/codecov;\
+          chmod +x .codecov;\
+          ./codecov -f ./coverage.xml"
       - name: unbuild the stack
         run: docker-compose down
