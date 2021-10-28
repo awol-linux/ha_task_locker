@@ -32,13 +32,10 @@ class MongoLock(Lock):
                 collection.find_one_and_delete(
                     {"_id": self.resource.name}
                 )
-                try:
-                    collection.insert_one(
-                        {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
-                    )
-                    return True
-                except DuplicateKeyError as e:
-                    raise FailedToAcquireLock
+                collection.insert_one(
+                    {"_id": self.resource.name, "date": datetime.datetime.utcnow()}
+                )
+                return True
             raise FailedToAcquireLock
         return True
 
@@ -48,7 +45,16 @@ class MongoLock(Lock):
                 {"_id": self.resource.name}
             )
         )
-
+    
+    @property
+    def status(self) -> bool:
+        collection = self.coll[self.resource.name]
+        item = collection.find_one({"_id": self.resource.name})
+        if item is not None:
+            if not (item["date"] + self.timeout) < datetime.datetime.utcnow():
+                return True
+        return False
+ 
 
 class MongoLockFactory(CreateLock):
     """Class to create MongoDB locks"""

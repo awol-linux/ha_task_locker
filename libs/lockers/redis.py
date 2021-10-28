@@ -59,6 +59,9 @@ class RedisLock(Lock):
         except redis.exceptions.LockError:
             raise FailedToReleaseLock
 
+    @property
+    def status(self) -> bool:
+        return self.lock.locked()
 
 class RedisLockFactory(CreateLock):
     """
