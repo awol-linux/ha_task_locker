@@ -73,11 +73,7 @@ class CreateLock(ABC):
     """
 
     @abstractmethod
-    def __call__(
-        self,
-        resource: LockResource,
-        timeout: timedelta,
-    ) -> Lock:
+    def __call__(self, resource: LockResource, timeout: timedelta) -> Lock:
         """
         Abstract factory used to create the lock
 

@@ -5,8 +5,8 @@ services:
     volumes:
       - ./:/workdir
     working_dir: "/workdir"
-    depends_on: 
-      - redis 
+    depends_on:
+      - redis
   redis:
     image: "redis:alpine"
   zookeeper:

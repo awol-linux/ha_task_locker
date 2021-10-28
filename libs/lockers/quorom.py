@@ -5,7 +5,14 @@ import os
 import logging
 from redis.lock import Lock as RedisClientLock
 
-from . import CreateLock, FailedToReleaseLock, Lock, LockResource, FailedToAcquireLock, UnknownLockStatus
+from . import (
+    CreateLock,
+    FailedToReleaseLock,
+    Lock,
+    LockResource,
+    FailedToAcquireLock,
+    UnknownLockStatus,
+)
 
 LOG = logging.getLogger(__name__)
 
@@ -18,7 +25,7 @@ class QuoromLock(Lock):
     Args:
         locks: List of lock objects
         resource: resource to lock
-        timeout: length of lock 
+        timeout: length of lock
             this is not used because the lock factory should
             be passing this data to all the locks
 
@@ -33,10 +40,7 @@ class QuoromLock(Lock):
     """
 
     def __init__(
-        self,
-        locks: List[Lock],
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, locks: List[Lock], resource: LockResource, timeout: datetime.timedelta
     ) -> None:
         self.resource = resource
         self.locks = locks
@@ -47,13 +51,13 @@ class QuoromLock(Lock):
         Acqure the lock
         It will try to acquire a lock on each of the locks it has.
         If it fails to get majoraty of the locks then it will raise a :class:`libs.lockers.FailedToAcquireLock`
-        
+
         Raises:
             libs.lockers.FailedToAcquireLock
-        
+
         Returns:
             bool
-        
+
         Examples:
 
             Acquire the lock::
@@ -67,9 +71,7 @@ class QuoromLock(Lock):
                 lock_status.update([lock.acquire()])
             except FailedToAcquireLock as e:
                 lock_status.update([False])
-                LOG.error(
-                    f"Failed to lock {self.resource.name} with {lock}: {e}"
-                )
+                LOG.error(f"Failed to lock {self.resource.name} with {lock}: {e}")
             if not lock_status[True] > lock_status[False]:
                 raise FailedToAcquireLock
         return True
@@ -79,13 +81,13 @@ class QuoromLock(Lock):
         Releaes the lock
         It will try to release a lock on each of the locks it has.
         If it fails to get majoraty of the locks then it will try to reacquire all the locks and try again raise a :class:`libs.lockers.FailedToAcquireLock`
-        
+
         Raises:
             libs.lockers.FailedToAcquireLock
-        
+
         Returns:
             bool
-        
+
         Examples:
 
             Acquire the lock::
@@ -93,6 +95,7 @@ class QuoromLock(Lock):
                 In [50]: lock.acquire()
                 Out[50]: True
         """
+
         def retry_release():
             lock_status: Counter = Counter()
             for lock in self.locks:
@@ -101,19 +104,18 @@ class QuoromLock(Lock):
                     lock_status.update([lock.release()])
                 except FailedToReleaseLock as e:
                     lock_status.update([False])
-                    LOG.error(f"Failed to Unlock {self.resource.name} with {lock}: {e}") 
+                    LOG.error(f"Failed to Unlock {self.resource.name} with {lock}: {e}")
             print(lock_status)
             if not lock_status[True] > lock_status[False]:
                 try:
                     self.acquire()
                 except FailedToAcquireLock:
                     raise UnknownLockStatus
-        try: 
+
+        try:
             return retry_release()
         except UnknownLockStatus:
             return retry_release()
-
-
 
 
 class QuoromLockFactory(CreateLock):
@@ -124,7 +126,7 @@ class QuoromLockFactory(CreateLock):
         lockers: list of :class:`libs.lockers.CreateLock` connection to use for locks`
 
     Examples:
-        Create multiple instances of :class:`libs.lockers.CreateLock` 
+        Create multiple instances of :class:`libs.lockers.CreateLock`
         in this example we use :class:`libs.lockers.zookeeper.KazooLockFactory` and :class:`libs.lockers.redis.RedisLockFactory`::
 
             In [1]: lockers = [zkLocker, redisLocker]
@@ -132,17 +134,12 @@ class QuoromLockFactory(CreateLock):
             In [2]: qlocker = QuoromLockFactory(lockers)
     """
 
-    def __init__(
-        self,
-        lockers: List[CreateLock],
-    ) -> None:
+    def __init__(self, lockers: List[CreateLock]) -> None:
         self.lockers = lockers
         super().__init__()
 
     def __call__(
-        self,
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, resource: LockResource, timeout: datetime.timedelta
     ) -> QuoromLock:
         """
         Create Lock instance
@@ -150,9 +147,9 @@ class QuoromLockFactory(CreateLock):
         Args:
             resource: resource to lock
             timeout: length of lock
-        
+
         Returns: A Quorom Lock
-        
+
         Examples:
 
             Create a lock instance::
@@ -163,7 +160,10 @@ class QuoromLockFactory(CreateLock):
                 Out[4]: libs.lockers.quorom.QuoromLock
         """
 
-        return QuoromLock([lock(resource, timeout) for lock in self.lockers], resource, timeout)
+        return QuoromLock(
+            [lock(resource, timeout) for lock in self.lockers], resource, timeout
+        )
+
 
 """
 from libs.lockers import LockResource
