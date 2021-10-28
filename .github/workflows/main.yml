@@ -25,7 +25,7 @@ jobs:
         if: always()
         run: |
           docker exec ha_task_locker_app_1 bash -c "\
-          python3.10 -m pytest --cov-report xml;\
+          python3.10 -m pytest --cov --cov-report xml;\
           curl -Os https://uploader.codecov.io/latest/linux/codecov;\
           chmod +x ./codecov;\
           ls -la;\
