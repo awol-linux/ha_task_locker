@@ -27,7 +27,7 @@ jobs:
           docker exec ha_task_locker_app_1 bash -c "\
           python3.10 -m pytest --cov-report xml;\
           curl -Os https://uploader.codecov.io/latest/linux/codecov;\
-          chmod +x .codecov;\
+          chmod +x ./codecov;\
           ./codecov -f ./coverage.xml"
       - name: unbuild the stack
         run: docker-compose down
