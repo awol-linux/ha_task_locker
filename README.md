@@ -42,7 +42,7 @@ FailedToAcquireLock                       Traceback (most recent call last)
 ----> 1 example.test_zk_scheduled_task()
 
 /workdir/libs/scheduler.py in run_task_if_lock(*args, **kwargs)
-     29 
+     29
      30         def run_task_if_lock(*args, **kwargs):
 ---> 31             if not lock.acquire():
      32                 LOG.info(
@@ -55,7 +55,7 @@ FailedToAcquireLock                       Traceback (most recent call last)
      30         self.kz.set(
      31             self.path,
 
-FailedToAcquireLock: 
+FailedToAcquireLock:
 
-In [4]: 
+In [4]:
 ```

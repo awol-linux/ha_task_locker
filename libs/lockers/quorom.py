@@ -40,10 +40,7 @@ class QuoromLock(Lock):
     """
 
     def __init__(
-        self,
-        locks: List[Lock],
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, locks: List[Lock], resource: LockResource, timeout: datetime.timedelta
     ) -> None:
         self.resource = resource
         self.locks = locks
@@ -135,17 +132,12 @@ class QuoromLockFactory(CreateLock):
             In [2]: qlocker = QuoromLockFactory(lockers)
     """
 
-    def __init__(
-        self,
-        lockers: List[CreateLock],
-    ) -> None:
+    def __init__(self, lockers: List[CreateLock]) -> None:
         self.lockers = lockers
         super().__init__()
 
     def __call__(
-        self,
-        resource: LockResource,
-        timeout: datetime.timedelta,
+        self, resource: LockResource, timeout: datetime.timedelta
     ) -> QuoromLock:
         """
         Create Lock instance
