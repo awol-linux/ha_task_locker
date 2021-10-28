@@ -1,4 +1,5 @@
 from datetime import timedelta
+from threading import Lock
 import pytest
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import Session
@@ -7,7 +8,7 @@ from celery import Celery
 from sqlalchemy.sql.expression import select
 from libs.lockers.sqlalchemy import SQLLockFacotory, _create_all, _drop_all
 from libs.scheduler import scheduled_task, shared_scheduled_task
-from libs.lockers import FailedToAcquireLock, FailedToReleaseLock
+from libs.lockers import FailedToAcquireLock, FailedToReleaseLock, LockResource
 from time import sleep
 
 
@@ -59,3 +60,18 @@ def test_zk_schared_task_locker(sqllock):
         test_zk_shared_task()
     sleep(1)
     test_zk_shared_task()
+
+def test_lock_status(app, sqllock: SQLLockFacotory):
+    # Create a zk lock factory for task
+    ttl = timedelta(seconds=1)
+    lock: Lock = sqllock(
+        resource=LockResource('test'),
+        timeout=ttl
+    )
+    lock.acquire()
+    assert lock.status
+    lock.release()
+    assert not lock.status
+    lock.acquire()
+    sleep(1)
+    assert not lock.status

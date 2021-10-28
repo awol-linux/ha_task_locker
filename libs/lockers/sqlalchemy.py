@@ -68,6 +68,16 @@ class SQLLock(Lock):
             self.session.delete(item)
         self.session.commit()
 
+    @property
+    def status(self) -> bool:
+        self._clear_expired()
+        items = (
+            self.session.query(LockTable)
+            .filter(LockTable.resource_name == self.resource.name)
+            .all()
+        )
+        return bool(items)
+
 
 class SQLLockFacotory(CreateLock):
     def __init__(

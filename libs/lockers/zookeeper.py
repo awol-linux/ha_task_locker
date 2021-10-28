@@ -112,6 +112,16 @@ class KazooLease(Lock):
         except NoNodeError:
             raise FailedToReleaseLock
 
+    @property
+    def status(self) -> bool:
+        """ Get lock status returned as bool """
+        self.kz.ensure_path(self.path)
+        current_lock, _ = self.kz.get(path=self.path)
+        now = datetime.datetime.now()
+        if current_lock == b"":
+            return False
+        return datetime.datetime.strptime(current_lock.decode("utf-8"), self.timefmt) > now
+
 
 class KazooLockFactory(CreateLock):
     """
